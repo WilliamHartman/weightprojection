@@ -51,7 +51,8 @@ class Navbar extends Component {
                         onRequestChange={(open) => this.setState({open})}
                         containerClassName='drawer'
                         >
-                        <Link to='/' className='link'><MenuItem onClick={this.handleClose} className='menu-item'>Login</MenuItem></Link>
+                        <Link to='/' className='link'><MenuItem onClick={this.handleClose} className='menu-item'>Dashboard</MenuItem></Link>
+                        <Link to='/settings' className='link'><MenuItem onClick={this.handleClose} className='menu-item'>Settings</MenuItem></Link>
                         <Link to='/about' className='link'><MenuItem onClick={this.handleClose} className='menu-item'>About</MenuItem></Link>
                     </Drawer>
                 </div>
@@ -64,22 +65,6 @@ class Navbar extends Component {
                             Login
                         </div>
                     </a>
-                    {/* <MDMenu
-                        size={60}
-                        color='#ffffff'                         
-                        onClick={this.handleToggle}
-                    />
-                    <Drawer
-                        docked={false}
-                        width={200}
-                        open={this.state.open}
-                        openSecondary={true}
-                        onRequestChange={(open) => this.setState({open})}
-                        containerClassName='drawer'
-                        >
-                        <Link to='/' className='link'><MenuItem onClick={this.handleClose} className='menu-item'>Home</MenuItem></Link>
-                        <Link to='/about' className='link'><MenuItem onClick={this.handleClose} className='menu-item'>About</MenuItem></Link>
-                    </Drawer> */}
                 </div>
             )
         }
@@ -108,7 +93,6 @@ class Navbar extends Component {
 }
 
 function mapStateToProps(state){
-    console.log(state)
     return {
         user: state.reducer.user
     }

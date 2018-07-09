@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import Navbar from './components/Navbar/Navbar';
 import './App.css';
+import router from './router';
 
 class App extends Component {
   handleClick() {
@@ -13,8 +14,9 @@ class App extends Component {
     return (
       <div className="App">
         <Navbar />
-        <a href={'http://localhost:8085/auth'}><button>Login</button></a>
-        <button onClick={this.handleClick}>Get User Info</button>
+          <div className="router-container">
+            {router}
+          </div>
       </div>
     );
   }
