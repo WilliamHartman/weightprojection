@@ -1,0 +1,62 @@
+/* https://material.io/tools/color/#!/?view.left=0&view.right=0&primary.color=00796B */
+
+.Navbar {
+    height: 80px;
+    width: 100%;
+    background: #00796b;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-decoration: none;
+}
+
+.link {
+    text-decoration: none;
+}
+
+.navbar-logo {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-decoration: none;
+    font-size: 37px;
+    color: #ffffff;
+    font-family: 'Kelly Slab', cursive;
+    margin-left: 10px;
+}
+
+.navbar-login-a {
+    text-decoration: none;
+}
+
+.navbar-login-button {
+    height: 38px;
+    width: 68px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    font-family: 'Kelly Slab', cursive;
+    color: #ffffff;
+    font-size: 20px;
+    margin-right: 10px;
+    border-radius: 3px;
+}
+
+.navbar-login-button:hover {
+    background-color: #48a999;
+    cursor: pointer;
+}
+
+.drawer {
+    background-color: #004c40 !important;
+}
+
+.menu-item {
+    color: white !important;
+    font-size: 20px !important;
+    font-family: 'Kelly Slab', cursive;
+}

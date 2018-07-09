@@ -2,6 +2,8 @@ const http = require('http');
 const path = require('path');
 const express = require('express');
 const axios = require('axios');
+const Auth0Strategy = require('passport-auth0');
+const passport = require('passport');
 const massive = require('massive');
 const session = require("express-session");
 const process = require("process");
@@ -12,11 +14,11 @@ require('dotenv').config();
 
 
 const fCtrl = require('./controllers/fitbit_controller');
-const lCtrl = require('./controllers/lifts_controller');
+
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
-app.use(express.static(__dirname + './../build'));
+// app.use(express.static(__dirname + './../build'));
 
 
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -24,8 +26,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const SESSION_SECRET = process.env.SESSION_SECRET;
 const CALLBACK_URL = process.env.CALLBACK_URL;
 const FRONTEND_URL = process.env.FRONTEND_URL;
-const BACKEND_URL = process.env.BACKEND_URL;
-
 
 // initialize the Fitbit API client
 const FitbitApiClient = require("fitbit-node");
@@ -46,10 +46,73 @@ app.use(session({
      saveUninitialized: true
     }));
 
+const strategy = new Auth0Strategy({
+    domain: process.env.AUTH_DOMAIN,
+    clientID: process.env.AUTH_CLIENT_ID,
+    clientSecret: process.env.AUTH_CLIENT_SECRET,
+    callbackURL: process.env.AUTH_CALLBACK
+}, (accessToken, refreshToken, extraParams, profile, done) => {
+    const db = app.get("db");
+    const userData = profile._json;
+    
+    db.find_user([userData.identities[0].user_id]).then(user => {
+    if (user[0]) {
+        return done(null, user[0].auth_id);
+    } else {
+        db.create_user([
+            userData.given_name,
+            userData.family_name,
+            userData.email,
+            userData.identities[0].user_id
+        ])
+        .then(user => {
+            return done(null, userData.identities[0].user_id);
+        });
+    }
+    });
+})
+
+passport.use(strategy)
+
+passport.serializeUser( (user, done) => {
+    done(null, user);
+}) 
+
+passport.deserializeUser( (id, done) => {
+    console.log('deserializeUser ', id)
+    app.get("db").find_session_user([id])
+        .then(user => {
+        console.log(user);
+        done(null, user[0]);
+        });
+})
+
+app.use(passport.initialize());
+app.use(passport.session()); 
+
+app.get('/auth/me', (req, res) => {
+    if(!req.user){
+        console.log('if(!req.user) === true')
+        return res.status(401).send('No user logged in.');
+    }
+    return res.status(200).send(req.user);
+})
+
+app.get('/auth', passport.authenticate('auth0'));
+app.get('/auth/callback', passport.authenticate('auth0', {
+    successRedirect: 'http://localhost:3000/'
+}))
+
+
+
 // redirect the user to the Fitbit authorization page
 app.get("/authorize", function (req, res) {
     // request access to the user's activity, heartrate, location, nutrion, profile, settings, sleep, social, and weight scopes
-    res.redirect(client.getAuthorizeUrl('activity heartrate location nutrition profile settings sleep social weight',CALLBACK_URL));
+    let authURL = client.getAuthorizeUrl('nutrition profile settings weight',CALLBACK_URL);
+    let redirect = [authURL.slice(0,69), CLIENT_ID, authURL.slice(69)].join('')
+    console.log(authURL)
+    console.log(redirect)
+    res.redirect(redirect);
 });
 
 // handle the callback from the Fitbit authorization flow
@@ -70,8 +133,7 @@ app.get("/callback", function (req, res) {
                                 profileData.data.user.lastName,
                                 profileData.data.user.avatar640,
                                 profileData.data.user.encodedId,
-                                profileData.data.user.height,                                
-                                profileData.data.user.weight,                                
+                                profileData.data.user.height,                                                             
                                 profileData.data.user.dateOfBirth,                                
                                 profileData.data.user.gender,                                
                                 profileData.data.user.timezone,
@@ -117,20 +179,8 @@ app.get("/logout", function(req, res) {
 
 //Endpoints
 app.get(`/api/auth/me`, fCtrl.authMe)
-app.get(`/api/data/getTodaySleep/:id/:date/:rest`, fCtrl.getTodaySleep)
-app.get(`/api/data/getTodayActivity/:id/:date/:rest`, fCtrl.getTodayActivity)
-app.get(`/api/data/getTodayWeight/:id/:date/:rest`, fCtrl.getTodayWeight)
-app.get(`/api/data/getTodayNutrition/:id/:date/:rest`, fCtrl.getTodayNutrition)
-app.get(`/api/data/getAllData/:id`, fCtrl.getAllData)
-app.post(`/api/data/getSinceLastLogin/:id/:date/:rest`, fCtrl.getSinceLastLogin)
-app.post(`/api/data/updateLastLogin/:id/:date`, fCtrl.updateLastLogin)
-app.put(`/api/data/updateGoals/:id`, fCtrl.updateGoals)
 
-//Exercise/lift log endpoints
-app.get(`/api/data/getAllLifts/:id`, lCtrl.getAllLifts)
-app.post(`/api/data/logLift/:id`, lCtrl.logLift)
-app.post(`/api/data/logLifts/:id`, lCtrl.logLifts)
-app.put(`/api/data/updateLift/:liftid`, lCtrl.updateLift)
+
 
 app.get('*', (req, res)=>{
   res.sendFile(path.join(__dirname, '../build/index.html'));
@@ -138,5 +188,5 @@ app.get('*', (req, res)=>{
 
 
 // launch the server
-const PORT = 8082;
+const PORT = 8085;
 app.listen(PORT, () => console.log(`Listening on port: ${PORT}`));

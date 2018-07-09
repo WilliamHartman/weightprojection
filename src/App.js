@@ -1,18 +1,20 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import axios from 'axios';
+import Navbar from './components/Navbar/Navbar';
 import './App.css';
 
 class App extends Component {
+  handleClick() {
+    console.log('clicked')
+    axios.get('/auth/me')
+      .then( (res) => console.log(res))
+  }
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
+        <Navbar />
+        <a href={'http://localhost:8085/auth'}><button>Login</button></a>
+        <button onClick={this.handleClick}>Get User Info</button>
       </div>
     );
   }
