@@ -128,10 +128,7 @@ app.get("/callback", function (req, res) {
                         // If no user, create user and redirect
                         if(!user[0]){
                             console.log('no user found')
-                            db.create_user([
-                                profileData.data.user.firstName,
-                                profileData.data.user.lastName,
-                                profileData.data.user.avatar640,
+                            db.fitbit_first_login([
                                 profileData.data.user.encodedId,
                                 profileData.data.user.height,                                                             
                                 profileData.data.user.dateOfBirth,                                
@@ -147,7 +144,7 @@ app.get("/callback", function (req, res) {
                                 req.session.authorized = true;
                                 req.session.access_token = result.access_token;
                                 req.session.save();
-                                res.redirect(`/UserLanding`);
+                                res.redirect(`/dashboard`);
                             })
                             .catch(err => console.log(err))
                         } else {
@@ -158,7 +155,7 @@ app.get("/callback", function (req, res) {
                                     req.session.authorized = true;
                                     req.session.access_token = result.access_token;
                                     req.session.save();
-                                    res.redirect(`/UserLanding`);
+                                    res.redirect(`/dashboard`);
                                 })
                         }
                     })

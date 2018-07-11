@@ -21,13 +21,26 @@ class Settings extends Component {
         }
     }
     
-    
+    fitbitConnected = () => {
+        if(this.props.fitbit_connected){
+            return 'Y'
+        } else {
+            return 'N'
+        }
+    }
 
     render (){
         console.log('settings for user: ', this.props.user)
         return (
             <div className="Settings">
-                Settings
+                <div className="settings-name">{this.props.user.given_name} {this.props.user.family_name}</div>
+                <div className="settings-fitbit-container">
+                    <div className="settings-fitbit-title">Fitbit Connection</div>
+                    <div className="settings-fitbit-middle">
+                        <div className="settings-fitbit-connected">Connected: </div>
+                        <div className="settings-fitbit-check">{this.fitbitConnected()}</div>
+                    </div>
+                </div>
             </div>
         )
     }

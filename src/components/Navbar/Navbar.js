@@ -54,6 +54,7 @@ class Navbar extends Component {
                         <Link to='/' className='link'><MenuItem onClick={this.handleClose} className='menu-item'>Dashboard</MenuItem></Link>
                         <Link to='/settings' className='link'><MenuItem onClick={this.handleClose} className='menu-item'>Settings</MenuItem></Link>
                         <Link to='/about' className='link'><MenuItem onClick={this.handleClose} className='menu-item'>About</MenuItem></Link>
+                        <a href={"http://localhost:8085/logout"} className='link'><MenuItem onClick={this.handleClose} className='menu-item'>Logout</MenuItem></a>
                     </Drawer>
                 </div>
             )
