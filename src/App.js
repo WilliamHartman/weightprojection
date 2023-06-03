@@ -8,20 +8,17 @@ function App() {
   const [userData, setUserData] = useState({})
 
   useEffect(() => {
-    axios.get("http://localhost:8088/auth/me", {withCredentials: true}).then(response => {
-      console.log(response)
+    axios.get("http://localhost:8088/api/auth/me", {withCredentials: true}).then(response => {
       if(response.data.userData){
         setUserData(response.data.userData[0])
       }
     })
   }, []);
 
-  console.log(userData)
-
-  if(userData){
+  if(userData.access_token){
     return (
       <div>
-        <Dashboard />
+        <Dashboard userData={userData}/>
       </div>
     )
   }
@@ -32,8 +29,7 @@ function App() {
         <div style={{height:'30px', width:'110px', border:'1px solid black', borderRadius:'3px', textAlign:'center', lineHeight:'30px'}}>Login to Fitbit</div>
       </a>
 
-      {/* <button onClick={() => axios.get("http://localhost:8088/test", {withCredentials: true}).then((response) => console.log(response))}>test</button>
-      <button onClick={() => axios.get("http://localhost:8088/getUser", {withCredentials: true}).then((response) => console.log(response))}>get</button> */}
+      <button onClick={() => axios.get("http://localhost:8088/api/getUser", {withCredentials: true}).then((response) => console.log(response))}>get</button>
     </div>
   );
 }

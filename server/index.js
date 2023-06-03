@@ -34,10 +34,7 @@ app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
 // app.use(express.static(__dirname + './../build'));
 app.use(morgan('dev'));
 
-
-
 const client = new FitbitApiClient({clientId: CLIENT_ID, clientSecret: CLIENT_SECRET});
-
 
 
  massive(process.env.CONNECTION_STRING)
@@ -118,9 +115,9 @@ app.get("/logout", function(req, res) {
 })
 
 //Endpoints
-app.get(`/auth/me`, ctrl.authMe)
-app.get(`/test`, ctrl.test)
-app.get(`/getUser`, ctrl.getUser)
+app.get(`/api/auth/me`, ctrl.authMe)
+app.get(`/api/getUser`, ctrl.getUser) 
+app.get(`/api/getData/:id`, ctrl.getData) 
 
 
 // const path = require('path')
