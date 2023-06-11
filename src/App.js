@@ -5,20 +5,20 @@ import axios from 'axios';
 
 
 function App() {
-  const [userData, setUserData] = useState({})
+  const [userInfo, setUserInfo] = useState({})
 
   useEffect(() => {
     axios.get("http://localhost:8088/api/auth/me", {withCredentials: true}).then(response => {
-      if(response.data.userData){
-        setUserData(response.data.userData[0])
+      if(response.data.userInfo){
+        setUserInfo(response.data.userInfo[0])
       }
     })
   }, []);
 
-  if(userData.access_token){
+  if(userInfo.access_token){
     return (
       <div>
-        <Dashboard userData={userData}/>
+        <Dashboard userInfo={userInfo}/>
       </div>
     )
   }
@@ -29,7 +29,6 @@ function App() {
         <div style={{height:'30px', width:'110px', border:'1px solid black', borderRadius:'3px', textAlign:'center', lineHeight:'30px'}}>Login to Fitbit</div>
       </a>
 
-      <button onClick={() => axios.get("http://localhost:8088/api/getUser", {withCredentials: true}).then((response) => console.log(response))}>get</button>
     </div>
   );
 }

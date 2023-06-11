@@ -55,14 +55,15 @@ app.get("/callback", function (req, res) {
   client.getAccessToken(req.query.code, CALLBACK_URL).then(function (result) {
       axios.get('https://api.fitbit.com/1/user/-/profile.json', {headers: {Authorization: `Bearer ${result.access_token}`}})
           .then( profileData => {
-            console.log(profileData)
               const db = app.get('db');
               // Check if there is a user with that fitbit id in the user table
               db.find_user([profileData.data.user.encodedId])
                   .then(user => {
                       // If no user, create user and redirect
                       if(!user[0]){
+                          let date = moment().format('YYYY-MM-DD')
                           console.log('no user found')
+
                           db.create_user([
                               profileData.data.user.firstName,
                               profileData.data.user.lastName,
@@ -75,10 +76,11 @@ app.get("/callback", function (req, res) {
                               result.access_token,
                               profileData.data.user.weight,
                               profileData.data.user.weight,
-                              moment().format('YYYY-MM-DD')
+                              date, 
+                              date
                           ]).then(returnedData => {
                               // ctrl.firstLoginDataRequest;
-                              req.session.userData = returnedData;
+                              req.session.userInfo = returnedData;
                               req.session.authorized = true;
                               req.session.access_token = result.access_token;
                               req.session.save((err) => {
@@ -91,12 +93,10 @@ app.get("/callback", function (req, res) {
                           // If there is a user, update the access token and redirect
                           db.update_access_token([result.access_token, user[0].auth_id])
                               .then(returnedData => {
-                                req.session.userData = returnedData;
+                                req.session.userInfo = returnedData;
                                 req.session.authorized = true;
                                 req.session.access_token = result.access_token;
                                 req.session.save((err) => {
-                                  console.log('Session before redirect')
-                                  console.log(req.session)
                                   res.redirect(`http://localhost:3000/`);
                                 });
                               })
@@ -116,9 +116,7 @@ app.get("/logout", function(req, res) {
 
 //Endpoints
 app.get(`/api/auth/me`, ctrl.authMe)
-app.get(`/api/getUser`, ctrl.getUser) 
-app.get(`/api/getData/:id`, ctrl.getData) 
-
+app.get(`/api/getUser/:id/:date/:rest`, ctrl.getUser)
 
 // const path = require('path')
 // app.get('*', (req, res)=>{
