@@ -1,27 +1,35 @@
 const axios = require('axios');
 const moment = require('moment');
 
-let userData = {};
+function getFromFitbit(db, accessToken, date, userID){
+    let data = {date: date}
 
+    axios.get(`https://api.fitbit.com//1/user/-/activities/date/${date}.json`, {headers: {Authorization: `Bearer ${accessToken}`}})
+        .then( fitbitActivityData => {
+            data.caloriesOut = fitbitActivityData.data.summary.caloriesOut
 
+            axios.get(`https://api.fitbit.com/1/user/-/foods/log/date/${date}.json`, {headers: {Authorization: `Bearer ${accessToken}`}})
+                .then( fitbitNutritionData => {
+                    data.caloriesIn = fitbitNutritionData.data.summary.calories
 
-function sinceLastLogin(req, res){
-    let todayDate = moment().format('YYYY-MM-DD');
-    let lastLoginDate = req.params.date;
-    let workingDate = lastLoginDate;
-    console.log(req.session)
-    console.log(`Today date: ${todayDate}`)
-    console.log(`Last login date: ${lastLoginDate}`)
-    if(todayDate !== lastLoginDate){
-        do{
-            console.log(`Update activity, weight, and calories for the date: ${workingDate}`)
-            // getSleep(req, res, workingDate, req.params.rest);
-            // getActivity(req, res, workingDate, req.params.rest);
-            // getWeight(req, res, workingDate, req.params.rest);
-            // getNutrition(req, res, workingDate, req.params.rest);
-            workingDate = moment(workingDate).add(1, 'days').format('YYYY-MM-DD');
-        }while(workingDate !== todayDate);
-    }
+                    axios.get(`https://api.fitbit.com/1/user/-/body/log/weight/date/${date}.json`, {headers: {Authorization: `Bearer ${accessToken}`}})
+                        .then( fitbitWeightData => {
+                            data.weight = fitbitWeightData.data.weight[0].weight
+                            data.fat = fitbitWeightData.data.weight[0].fat
+
+                            db.get_daily_data_by_id_and_date(userID, date)
+                                .then( dbData => {
+                                    if(!dbData[0]){
+                                        db.create_daily(userID, date, data.caloriesOut, data.caloriesIn, data.weight, data.fat)
+                                    } else {
+                                        db.update_daily(dbData[0].id, data.caloriesOut, data.caloriesIn, data.weight, data.fat)
+                                    }
+                                })
+
+                            return
+                        })
+            })
+    })
 }
 
 module.exports = {
@@ -35,28 +43,34 @@ module.exports = {
 
     getUser: (req, res) => {
         const db = req.app.get('db');
-        
-        db.get_burned([req.params.id])
-            .then(returnedBurnedData => {
-                db.get_consumed([req.params.id])
-                    .then(returnedConsumedData => {
-                        db.get_weights([req.params.id])
-                            .then(returnedWeightData => {
-                                let userData = {
-                                    burnedData: returnedBurnedData,
-                                    consimedData: returnedConsumedData,
-                                    weightData: returnedWeightData
-                                }
+        console.log('getUser hit, user ID: ', req.params)
 
-                                sinceLastLogin(req, res)
-                                res.status(200).send(userData)
+        db.get_user_by_id(req.params.id)
+            .then( userData => {
+                let todayDate = moment().format('YYYY-MM-DD')
+                let workingDate = todayDate
+                let lastLogin = moment(userData[0].last_login).subtract(1, 'days').format('YYYY-MM-DD')
+
+                do {
+                    console.log('test get for date: ', workingDate)
+                    getFromFitbit(db, req.session.access_token, workingDate, req.params.id)
+                    workingDate = moment(workingDate).subtract(1, 'days').format('YYYY-MM-DD')
+                } while (workingDate !== lastLogin)
+
+                db.update_last_login(req.params.id, todayDate)
+                    .then(() => {
+                        db.get_daily(req.params.id)
+                            .then( dailyData => {
+                                res.status(200).send(dailyData)
+
                             })
                     })
+
             })
-        
     },
 
     getData: (req, res) => {
+
         
         res.status(200).send(req.session)
     }

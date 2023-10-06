@@ -116,7 +116,8 @@ app.get("/logout", function(req, res) {
 
 //Endpoints
 app.get(`/api/auth/me`, ctrl.authMe)
-app.get(`/api/getUser/:id/:date/:rest`, ctrl.getUser)
+app.get(`/api/getUser/:id/`, ctrl.getUser)
+// app.get(`/api/getUser/:id/:date/:rest`, ctrl.getUser)
 
 // const path = require('path')
 // app.get('*', (req, res)=>{
