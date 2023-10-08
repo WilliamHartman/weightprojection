@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import './App.css';
-import Dashboard from './components/Dashboard';
+import Dashboard from './components/Dashboard/Dashboard';
 import axios from 'axios';
 
 
@@ -17,7 +17,7 @@ function App() {
 
   if(userInfo.access_token){
     return (
-      <div>
+      <div className="App">
         <Dashboard userInfo={userInfo}/>
       </div>
     )

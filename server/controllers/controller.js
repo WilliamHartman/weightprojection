@@ -62,7 +62,6 @@ module.exports = {
                         db.get_daily(req.params.id)
                             .then( dailyData => {
                                 res.status(200).send(dailyData)
-
                             })
                     })
 
