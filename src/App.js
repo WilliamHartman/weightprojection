@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import './App.css';
 import Dashboard from './components/Dashboard/Dashboard';
 import axios from 'axios';
-
+import Button from '@mui/material/Button';
 
 function App() {
   const [userInfo, setUserInfo] = useState({})
@@ -26,10 +26,7 @@ function App() {
 
   return (
     <div className="App">
-      <a href={'http://localhost:8088/authorize'}>
-        <div style={{height:'30px', width:'110px', border:'1px solid black', borderRadius:'3px', textAlign:'center', lineHeight:'30px'}}>Login to Fitbit</div>
-      </a>
-
+      <Button variant='contained' href="http://localhost:8088/authorize">Login to Fitbit</Button>
     </div>
   );
 }
