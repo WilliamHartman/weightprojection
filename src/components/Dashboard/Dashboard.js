@@ -1,65 +1,60 @@
 import React, { useEffect, useState } from 'react'
 import './Dashboard.css';
 import axios from 'axios';
-import moment from 'moment';
-import { jsx } from '@emotion/react';
+import Data from '../Data/Data.js'
+import Charts from '../Charts/Charts.js'
 
-function dayContainer(dailyData) {
-  let jsxDailyData = dailyData.map( data => {
-    return (
-      <div className='day-container'>
-        <div className='date'>{moment(data.daily_date).format(`MMMM DD, YYYY`)}</div>
-        <div className='day-subcont'>
-          <div className='data-cont'>
-            <div className='data-title'>Calories In</div>
-            <div>{data.calories_consumed}</div>
-          </div>
-          <div className='data-cont'>
-            <div className='data-type'>Calories Out</div>
-            <div >{data.calories_burned}</div>
-          </div>
-          <div className='data-cont'>
-            <div className='data-type'>Weight</div>
-            <div >{data.daily_weight}</div>
-          </div>
-          <div className='data-cont'>
-            <div className='data-type'>Fat</div>
-            <div >{Math.round(data.fat * 10) / 10}%</div>
-          </div>
-        </div>
-      </div>
-    )
-  })
-  return jsxDailyData;
+function tabRender(selectedTab, dailyData){
+  if(dailyData.length <= 0){
+    return null;
+  }
+  switch(selectedTab){
+    case 'data': 
+      return  <Data dailyData={dailyData}/>
+      break;
+    case 'charts':
+      return  <Charts dailyData={dailyData}/>
+      break;
+  }
 }
 
 export default function Dashboard(props) {
   const [dailyData, setDailyData] = useState({})
+  const [selectedTab, setSelectedTab] = useState('data')
 
   useEffect(() => {
-    console.log('useEffect in dashboard hit')
     axios.get(`http://localhost:8088/api/getUser/${props.userInfo.id}`, {withCredentials: true}).then(response => {
       setDailyData(response.data)
     })
   }, []);
 
-  console.log(props)
-  console.log(dailyData)
-
-  if(dailyData.length === 0){
+  if(Object.keys(dailyData).length === 0){
     return (
-      <div>
-        <h1>Updating data...</h1>
+      <div className='Dashboard'>
+        <h1 className='title'>Weight Projection</h1>
+        <div className='tab-container'>
+          <div className={selectedTab === 'charts' ? 'selected-tab tab' : 'tab'} onClick={() => setSelectedTab('charts')}>Charts</div>
+          <div className={selectedTab === 'data' ? 'selected-tab tab' : 'tab'} onClick={() => setSelectedTab('data')}>Data</div>
+        </div>
+        <div className='main-container'>
+          <h1>Updating data...</h1>
+        </div>
+      </div>
+    )
+  } else {
+    return (
+      <div className='Dashboard'>
+        <h1 className='title'>Weight Projection</h1>
+        <div className='tab-container'>
+          <div className={selectedTab === 'charts' ? 'selected-tab tab' : 'tab'} onClick={() => setSelectedTab('charts')}>Charts</div>
+          <div className={selectedTab === 'data' ? 'selected-tab tab' : 'tab'} onClick={() => setSelectedTab('data')}>Data</div>
+        </div>
+        <div className='main-container'>
+          {
+            tabRender(selectedTab, dailyData)
+          }
+        </div>
       </div>
     )
   }
-
-  return (
-    <div className='Dashboard'>
-      <h1 className='title'>Weight Projection</h1>
-      {
-       dayContainer(dailyData)
-      }
-    </div>
-  )
 }

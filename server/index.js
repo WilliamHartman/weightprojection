@@ -36,7 +36,6 @@ app.use(morgan('dev'));
 
 const client = new FitbitApiClient({clientId: CLIENT_ID, clientSecret: CLIENT_SECRET});
 
-
  massive(process.env.CONNECTION_STRING)
 .then( (db) => {
     console.log('Connected to ElephantSQL')

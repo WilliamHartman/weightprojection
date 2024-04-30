@@ -14,11 +14,12 @@ function getFromFitbit(db, accessToken, date, userID){
 
                     axios.get(`https://api.fitbit.com/1/user/-/body/log/weight/date/${date}.json`, {headers: {Authorization: `Bearer ${accessToken}`}})
                         .then( fitbitWeightData => {
-                            data.weight = fitbitWeightData.data.weight[0].weight
-                            data.fat = fitbitWeightData.data.weight[0].fat
+                            data.weight = fitbitWeightData.data.weight[0] ? fitbitWeightData.data.weight[0].weight : 0
+                            data.fat = fitbitWeightData.data.weight[0] ? fitbitWeightData.data.weight[0].fat : 0
 
                             db.get_daily_data_by_id_and_date(userID, date)
                                 .then( dbData => {
+                                    console.log(`Date: ${date} | Calories Out: ${data.caloriesOut} | Calories In: ${data.caloriesIn} | Weight ${data.weight} | Fat: ${data.fat}`)
                                     if(!dbData[0]){
                                         db.create_daily(userID, date, data.caloriesOut, data.caloriesIn, data.weight, data.fat)
                                     } else {
@@ -30,6 +31,30 @@ function getFromFitbit(db, accessToken, date, userID){
                         })
             })
     })
+}
+
+const timer = ms => new Promise(res => setTimeout(res, ms))
+
+async function dailyGetLoop(req, res, db, userData){
+    let todayDate = moment().format('YYYY-MM-DD')
+    let workingDate = todayDate
+    let lastLogin = moment(userData[0].last_login).subtract(1, 'days').format('YYYY-MM-DD')
+    console.log(lastLogin)
+
+    do {
+        console.log('do while loop get for date: ', workingDate)
+        getFromFitbit(db, req.session.access_token, workingDate, req.params.id)
+        workingDate = moment(workingDate).subtract(1, 'days').format('YYYY-MM-DD')
+        await timer(1000);
+    } while (workingDate !== lastLogin)
+
+    db.update_last_login(req.params.id, todayDate)
+        .then(() => {
+            db.get_daily(req.params.id)
+                .then( dailyData => {
+                    res.status(200).send(dailyData)
+                })
+        })
 }
 
 module.exports = {
@@ -47,24 +72,7 @@ module.exports = {
 
         db.get_user_by_id(req.params.id)
             .then( userData => {
-                let todayDate = moment().format('YYYY-MM-DD')
-                let workingDate = todayDate
-                let lastLogin = moment(userData[0].last_login).subtract(1, 'days').format('YYYY-MM-DD')
-
-                do {
-                    console.log('test get for date: ', workingDate)
-                    getFromFitbit(db, req.session.access_token, workingDate, req.params.id)
-                    workingDate = moment(workingDate).subtract(1, 'days').format('YYYY-MM-DD')
-                } while (workingDate !== lastLogin)
-
-                db.update_last_login(req.params.id, todayDate)
-                    .then(() => {
-                        db.get_daily(req.params.id)
-                            .then( dailyData => {
-                                res.status(200).send(dailyData)
-                            })
-                    })
-
+                dailyGetLoop(req, res, db, userData)
             })
     },
 

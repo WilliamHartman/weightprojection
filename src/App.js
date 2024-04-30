@@ -16,6 +16,7 @@ function App() {
   }, []);
 
   if(userInfo.access_token){
+    console.log(userInfo)
     return (
       <div className="App">
         <Dashboard userInfo={userInfo}/>
